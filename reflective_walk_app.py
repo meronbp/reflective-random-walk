@@ -1,0 +1,62 @@
+
+import streamlit as st
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Page config
+st.set_page_config(page_title="1D Reflective Random Walk", layout="centered")
+
+st.title("🎲 1D Reflective Random Walk on a Finite Lattice")
+st.markdown("""
+Explore how a random walker moves across a 1D lattice with reflective boundaries.
+
+- The walker starts at a selected position.
+- At each time step, it moves left or right with equal probability.
+- At the edges, it reflects back instead of falling off.
+""")
+
+# Transition matrix for N = 5 with reflective boundaries
+U = np.array([
+    [0.5, 0.5, 0,   0,   0],
+    [0.5, 0,   0.5, 0,   0],
+    [0,   0.5, 0,   0.5, 0],
+    [0,   0,   0.5, 0,   0.5],
+    [0,   0,   0,   0.5, 0.5]
+])
+
+# Sidebar controls
+st.sidebar.header("Simulation Controls")
+steps = st.sidebar.slider("Number of time steps", 1, 100, 20)
+start_pos = st.sidebar.slider("Starting position (0 to 4)", 0, 4, 2)
+
+# Simulate
+P = np.zeros((5, steps + 1))
+P[start_pos, 0] = 1
+for t in range(1, steps + 1):
+    P[:, t] = U @ P[:, t - 1]
+
+# Plotting
+fig, ax = plt.subplots(figsize=(10, 6))
+for i in range(5):
+    ax.plot(range(steps + 1), P[i, :], label=f'Position {i}')
+ax.set_xlabel("Time Step")
+ax.set_ylabel("Probability")
+ax.set_title("Evolution of Position Probabilities")
+ax.legend()
+ax.grid(True)
+st.pyplot(fig)
+
+# Display transition matrix
+with st.expander("📋 Show Transition Matrix"):
+    st.latex(r'''
+    U = \begin{bmatrix}
+    \frac{1}{2} & \frac{1}{2} & 0 & 0 & 0 \\
+    \frac{1}{2} & 0 & \frac{1}{2} & 0 & 0 \\
+    0 & \frac{1}{2} & 0 & \frac{1}{2} & 0 \\
+    0 & 0 & \frac{1}{2} & 0 & \frac{1}{2} \\
+    0 & 0 & 0 & \frac{1}{2} & \frac{1}{2}
+    \end{bmatrix}
+    ''')
+
+st.markdown("---")
+st.caption("Created with ❤️ by your Interactive Physics Tutor")
